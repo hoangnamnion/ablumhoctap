@@ -634,6 +634,18 @@
     </div>
   </div>
 
+  <!-- Admin Password Modal -->
+  <div class="modal" id="adminModal" onclick="if(event.target===this) closeAdminModal()">
+    <div class="modal-card">
+      <h3>🔒 Chỉ Admin mới được xóa</h3>
+      <input type="password" id="adminPwdInput" placeholder="Nhập mật khẩu admin..." />
+      <div class="modal-footer">
+        <button class="btn" onclick="closeAdminModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="submitAdminPwd()">Xác nhận xóa</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
   <script>
@@ -647,6 +659,7 @@
     let currentView = "grid";
     let editingFolderId = null;
     let movingImageId = null;
+    let pendingDeleteAction = null;
 
     const searchInput = document.getElementById("searchInput");
     const fileInput = document.getElementById("fileInput");
@@ -1003,14 +1016,62 @@
       await loadAll();
     }
 
+    function getAdminPass() {
+      return sessionStorage.getItem("admin_pass") || "";
+    }
+
+    function requireAdmin(action) {
+      if (getAdminPass()) {
+        action();
+        return;
+      }
+      pendingDeleteAction = action;
+      const input = document.getElementById("adminPwdInput");
+      input.value = "";
+      document.getElementById("adminModal").classList.add("open");
+      setTimeout(() => input.focus(), 50);
+    }
+
+    function closeAdminModal() {
+      document.getElementById("adminModal").classList.remove("open");
+      pendingDeleteAction = null;
+    }
+
+    async function submitAdminPwd() {
+      const pwd = document.getElementById("adminPwdInput").value;
+      if (!pwd) return showToast("Vui lòng nhập mật khẩu!");
+      const res = await fetch(`${API_BASE}/api/admin/verify`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: pwd })
+      });
+      if (!res.ok) {
+        return showToast("Sai mật khẩu admin!");
+      }
+      sessionStorage.setItem("admin_pass", pwd);
+      const act = pendingDeleteAction;
+      closeAdminModal();
+      if (act) await act();
+    }
+
     async function deleteFolder(id, name) {
       if (!confirm(`Xóa thư mục "${name}"? Ảnh bên trong sẽ chuyển về Trang chủ.`)) return;
-      const res = await fetch(`${API_BASE}/api/folders/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        if (currentFolderId === id) currentFolderId = null;
-        showToast(`Đã xóa thư mục "${name}"`);
-        await loadAll();
-      }
+      requireAdmin(async () => {
+        const res = await fetch(`${API_BASE}/api/folders/${id}`, {
+          method: "DELETE",
+          headers: { "X-Admin-Password": getAdminPass() }
+        });
+        if (res.status === 403) {
+          sessionStorage.removeItem("admin_pass");
+          showToast("Sai mật khẩu admin!");
+          return;
+        }
+        if (res.ok) {
+          if (currentFolderId === id) currentFolderId = null;
+          showToast(`Đã xóa thư mục "${name}"`);
+          await loadAll();
+        }
+      });
     }
 
     function openMoveModal(img) {
@@ -1083,11 +1144,22 @@
     }
 
     async function deleteImage(id) {
-      const res = await fetch(`${API_BASE}/api/images/${id}`, { method: "DELETE" });
-      if (res.ok) {
-        showToast("Đã xóa ảnh");
-        await loadAll();
-      }
+      requireAdmin(async () => {
+        const res = await fetch(`${API_BASE}/api/images/${id}`, {
+          method: "DELETE",
+          headers: { "X-Admin-Password": getAdminPass() }
+        });
+        if (res.status === 403) {
+          sessionStorage.removeItem("admin_pass");
+          showToast("Sai mật khẩu admin!");
+          return;
+        }
+        if (res.ok) {
+          closeLightbox();
+          showToast("Đã xóa ảnh");
+          await loadAll();
+        }
+      });
     }
 
     searchInput.addEventListener("input", render);
@@ -1113,12 +1185,16 @@
     document.getElementById("folderNameInput").addEventListener("keydown", (e) => {
       if (e.key === "Enter") submitFolder();
     });
+    document.getElementById("adminPwdInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") submitAdminPwd();
+    });
     window.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
         closeLightbox();
         closeB64Modal();
         closeFolderModal();
         closeMoveModal();
+        closeAdminModal();
       }
     });
 
