@@ -1,1045 +1,1128 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#ffffff">
-    <title>📸 Telegram Album Pro - Cloud Sync</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-        }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Album Học</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --surface: #000000;
+      --surface-2: #141414;
+      --border: #ffffff;
+      --text: #ffffff;
+      --muted: #d4d4d4;
+      --primary: #ffffff;
+      --primary-hover: #e5e5e5;
+      --danger: #ff4d4d;
+      --star: #fbbf24;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body {
+      margin: 0;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100dvh;
+      padding-bottom: 84px;
+    }
 
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background: #f5f7fb;
-            padding: 20px;
-            padding-bottom: 80px;
-            color: #1e2a3a;
-        }
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 14px 16px;
+    }
 
-        .app-container {
-            max-width: 600px;
-            margin: 0 auto;
-        }
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: #000000;
+      border: 1px solid #ffffff;
+      display: grid;
+      place-items: center;
+      font-weight: 800;
+      font-size: 1rem;
+      color: #ffffff;
+      flex-shrink: 0;
+    }
+    .brand-title {
+      font-size: 1.12rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .stats-pill {
+      font-size: 0.78rem;
+      color: var(--muted);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 5px 10px;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
 
-        /* Header */
-        .header {
-            background: white;
-            border-radius: 24px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-        }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      padding: 8px 13px;
+      border-radius: 10px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    .btn:hover { background: var(--surface-2); }
+    .btn-primary {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: #000000;
+    }
+    .btn-primary:hover { background: var(--primary-hover); }
 
-        h1 {
-            font-size: 28px;
-            font-weight: 600;
-            color: #1e2a3a;
-            margin-bottom: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+    .view-toggle {
+      display: flex;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2px;
+    }
+    .view-toggle button {
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      padding: 6px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .view-toggle button.active {
+      background: var(--surface-2);
+      color: var(--text);
+    }
 
-        .sync-status {
-            font-size: 11px;
-            background: #e8f5e9;
-            color: #2e7d32;
-            padding: 4px 10px;
-            border-radius: 20px;
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-        }
+    /* Search & Filter Bar */
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+    .search-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0 12px;
+      height: 42px;
+    }
+    .search-box:focus-within { border-color: var(--primary); }
+    .search-box input {
+      border: none;
+      background: transparent;
+      outline: none;
+      color: var(--text);
+      width: 100%;
+      font-size: 0.92rem;
+    }
+    .sort-select {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 12px;
+      padding: 0 12px;
+      height: 42px;
+      font-size: 0.86rem;
+      outline: none;
+      cursor: pointer;
+    }
 
-        .sync-status.syncing {
-            background: #fff3e0;
-            color: #ed6c02;
-        }
+    /* Filter Chips */
+    .chips-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      margin-bottom: 14px;
+      scrollbar-width: none;
+    }
+    .chips-bar::-webkit-scrollbar { display: none; }
+    .chip {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-size: 0.84rem;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .chip.active {
+      background: #ffffff;
+      border-color: #ffffff;
+      color: #000000;
+    }
 
-        .subtitle {
-            color: #8e9eae;
-            font-size: 13px;
-            margin-bottom: 20px;
-        }
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+      font-size: 0.9rem;
+    }
+    .crumb-btn {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 4px 8px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+    .crumb-btn:hover { background: var(--surface); color: var(--text); }
+    .crumb-btn.current { color: var(--text); font-weight: 600; }
 
-        /* Tạo album */
-        .create-album-section {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 16px;
-        }
+    /* Folder Cards */
+    .section-label {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--muted);
+      margin: 8px 0 10px;
+      font-weight: 600;
+    }
+    .folder-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .folder-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .folder-card:hover { border-color: var(--primary); background: var(--surface-2); }
+    .folder-name {
+      flex: 1;
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .folder-acts { display: flex; gap: 4px; }
+    .icon-mini {
+      border: none;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text);
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 0.82rem;
+    }
+    .icon-mini:hover { background: rgba(255, 255, 255, 0.2); }
 
-        .album-input {
-            flex: 1;
-            padding: 12px 16px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 15px;
-            outline: none;
-            transition: all 0.2s;
-            background: white;
-        }
+    /* Image Grid */
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 12px;
+    }
+    .photo-card {
+      position: relative;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      cursor: pointer;
+      aspect-ratio: 4 / 3;
+    }
+    .photo-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.25s;
+    }
+    .photo-card:hover img { transform: scale(1.03); }
+    .photo-overlay {
+      position: absolute;
+      inset: auto 0 0 0;
+      padding: 24px 10px 8px;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 6px;
+    }
+    .photo-name {
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .photo-size {
+      font-size: 0.7rem;
+      color: #d1d5db;
+      white-space: nowrap;
+    }
+    .star-float {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      border: 1px solid #ffffff;
+      background: rgba(0, 0, 0, 0.7);
+      color: #ffffff;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      font-size: 0.95rem;
+    }
+    .star-float.starred { color: var(--star); }
 
-        .album-input:focus {
-            border-color: #4da6ff;
-            box-shadow: 0 0 0 3px rgba(77,166,255,0.1);
-        }
+    /* List View */
+    .list-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .list-row {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .list-thumb {
+      width: 48px;
+      height: 48px;
+      border-radius: 8px;
+      object-fit: cover;
+      flex-shrink: 0;
+      cursor: pointer;
+      border: 1px solid var(--border);
+    }
+    .list-info {
+      flex: 1;
+      min-width: 0;
+      cursor: pointer;
+    }
+    .list-title {
+      font-size: 0.9rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .list-meta {
+      font-size: 0.76rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .list-acts { display: flex; gap: 6px; flex-shrink: 0; }
 
-        .btn-primary {
-            background: #4da6ff;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 12px;
-            font-weight: 600;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+    /* Empty / Dropzone */
+    .empty-box {
+      border: 2px dashed var(--border);
+      background: var(--surface);
+      border-radius: 16px;
+      padding: 44px 20px;
+      text-align: center;
+      color: var(--muted);
+    }
+    .empty-box h3 { color: var(--text); margin: 0 0 8px; font-size: 1.05rem; }
+    .empty-box p { margin: 0 0 18px; font-size: 0.88rem; line-height: 1.5; }
+    .empty-btns { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
 
-        .btn-primary:active {
-            transform: scale(0.96);
-        }
+    /* Mobile Bottom Bar */
+    .mobile-bar { display: none; }
 
-        .btn-secondary {
-            background: #eef2f6;
-            color: #4a627a;
-            border: none;
-            padding: 12px 16px;
-            border-radius: 12px;
-            font-weight: 500;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+    /* Lightbox */
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.96);
+      z-index: 60;
+      display: none;
+      flex-direction: column;
+    }
+    .lightbox.open { display: flex; }
+    .lb-top {
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+    .lb-title {
+      font-size: 0.92rem;
+      font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .lb-body {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      padding: 16px;
+      overflow: auto;
+    }
+    .lb-body img {
+      max-width: 100%;
+      max-height: 74dvh;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+    }
+    .lb-bottom {
+      padding: 12px 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+    }
+    .btn-danger {
+      background: #000000;
+      border-color: #ff4d4d;
+      color: #ff4d4d;
+    }
 
-        .btn-secondary:active {
-            transform: scale(0.96);
-        }
+    /* Modals */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.78);
+      z-index: 70;
+      display: none;
+      place-items: center;
+      padding: 16px;
+    }
+    .modal.open { display: grid; }
+    .modal-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 440px;
+      padding: 20px;
+    }
+    .modal-card h3 { margin: 0 0 14px; font-size: 1.05rem; }
+    .modal-card input, .modal-card textarea, .modal-card select {
+      width: 100%;
+      background: var(--bg);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 11px 12px;
+      margin-bottom: 12px;
+      font-size: 16px;
+      font-family: inherit;
+      outline: none;
+    }
+    .modal-card textarea {
+      min-height: 110px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; }
 
-        /* Action buttons */
-        .action-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 12px;
-        }
+    .toast {
+      position: fixed;
+      bottom: 84px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #000000;
+      border: 1px solid #ffffff;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 999px;
+      font-size: 0.86rem;
+      z-index: 90;
+      display: none;
+      white-space: nowrap;
+    }
+    .toast.show { display: block; }
 
-        .btn-export {
-            flex: 1;
-            background: #10b981;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 12px;
-            font-weight: 500;
-            font-size: 13px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        .btn-import {
-            flex: 1;
-            background: #f59e0b;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 12px;
-            font-weight: 500;
-            font-size: 13px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-
-        /* Danh sách album */
-        .albums-scroll {
-            overflow-x: auto;
-            white-space: nowrap;
-            padding: 4px 0 12px 0;
-            margin-bottom: 16px;
-        }
-
-        .albums-list {
-            display: inline-flex;
-            gap: 10px;
-            padding: 0 4px;
-        }
-
-        .album-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: white;
-            border-radius: 40px;
-            padding: 8px 16px 8px 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid #eef2f6;
-        }
-
-        .album-chip.active {
-            background: #4da6ff;
-            color: white;
-            border-color: #4da6ff;
-        }
-
-        .album-name {
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        .delete-album {
-            background: none;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            padding: 0 4px;
-            color: #cbd5e1;
-        }
-
-        /* Upload area */
-        .upload-area {
-            background: white;
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 16px;
-            border: 2px dashed #e2e8f0;
-            transition: all 0.2s;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .upload-area.drag-over {
-            border-color: #4da6ff;
-            background: #f0f9ff;
-        }
-
-        .upload-icon {
-            font-size: 40px;
-            margin-bottom: 8px;
-        }
-
-        .upload-text {
-            color: #4a627a;
-            font-size: 14px;
-            font-weight: 500;
-        }
-
-        /* Toolbar */
-        .toolbar {
-            background: white;
-            border-radius: 16px;
-            padding: 12px 16px;
-            margin-bottom: 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .select-all {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-            color: #4a627a;
-        }
-
-        .delete-selected {
-            background: #ff6b6b;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 12px;
-            font-weight: 500;
-            cursor: pointer;
-        }
-
-        /* Gallery */
-        .gallery {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            margin-top: 8px;
-        }
-
-        .photo-item {
-            position: relative;
-            aspect-ratio: 1;
-            border-radius: 16px;
-            overflow: hidden;
-            background: #f1f5f9;
-            cursor: pointer;
-        }
-
-        .photo-item img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .photo-checkbox {
-            position: absolute;
-            top: 8px;
-            right: 8px;
-            width: 28px;
-            height: 28px;
-            background: rgba(255,255,255,0.95);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 2;
-        }
-
-        .photo-checkbox.selected {
-            background: #4da6ff;
-        }
-
-        .delete-single {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(255,255,255,0.95);
-            color: #ff6b6b;
-            border: none;
-            border-radius: 50%;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .skeleton {
-            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
-            background-size: 200% 100%;
-            animation: loading 1.5s infinite;
-        }
-
-        @keyframes loading {
-            0% { background-position: 200% 0; }
-            100% { background-position: -200% 0; }
-        }
-
-        .viewer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.92);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            cursor: pointer;
-        }
-
-        .viewer img {
-            max-width: 92%;
-            max-height: 92%;
-            object-fit: contain;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e2a3a;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 40px;
-            font-size: 13px;
-            z-index: 1100;
-            opacity: 0;
-            transition: opacity 0.2s;
-            pointer-events: none;
-            white-space: nowrap;
-        }
-
-        .upload-progress {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            background: #4da6ff;
-            height: 3px;
-            width: 0%;
-            transition: width 0.3s;
-            z-index: 2000;
-        }
-
-        .empty-state {
-            grid-column: 1/-1;
-            text-align: center;
-            padding: 60px 20px;
-            color: #94a3b8;
-            background: white;
-            border-radius: 20px;
-        }
-
-        /* Modal Import */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.5);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1500;
-        }
-
-        .modal-content {
-            background: white;
-            border-radius: 24px;
-            padding: 24px;
-            max-width: 90%;
-            width: 320px;
-            text-align: center;
-        }
-
-        .modal-content h3 {
-            margin-bottom: 16px;
-            color: #1e2a3a;
-        }
-
-        .modal-content input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            margin-bottom: 16px;
-        }
-
-        .modal-buttons {
-            display: flex;
-            gap: 10px;
-        }
-
-        .modal-buttons button {
-            flex: 1;
-            padding: 10px;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-        }
-
-        @media (max-width: 480px) {
-            body { padding: 16px; }
-            .gallery { gap: 10px; }
-        }
-    </style>
+    @media (max-width: 720px) {
+      .container { padding: 12px; }
+      .desktop-only { display: none !important; }
+      .photo-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .photo-card { aspect-ratio: 1 / 1; border-radius: 12px; }
+      .folder-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .folder-card { padding: 10px; }
+      .mobile-bar {
+        display: flex;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: #000000;
+        border-top: 1px solid #ffffff;
+        padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+        gap: 8px;
+        z-index: 50;
+      }
+      .mobile-bar .btn {
+        flex: 1;
+        justify-content: center;
+        padding: 10px 8px;
+        font-size: 0.84rem;
+      }
+    }
+  </style>
 </head>
 <body>
-<div class="app-container">
-    <div class="header">
-        <h1>
-            📸 Telegram Album
-            <span id="syncStatus" class="sync-status">☁️ Đã đồng bộ</span>
-        </h1>
-        <div class="subtitle">Lưu trữ trên Telegram Cloud - Backup & Restore dễ dàng</div>
-        
-        <div class="create-album-section">
-            <input type="text" id="newAlbum" class="album-input" placeholder="Tên album mới..." autocomplete="off">
-            <button id="btnCreateAlbum" class="btn-primary">Tạo</button>
-            <button id="btnSync" class="btn-secondary" title="Đồng bộ từ Cloud">🔄</button>
+  <div class="container">
+    <header class="header">
+      <div class="brand" onclick="goRoot()">
+        <div class="logo">A</div>
+        <span class="brand-title">Album Học</span>
+        <span class="stats-pill" id="statsPill">0 ảnh</span>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn desktop-only" onclick="openFolderModal()">📁 Thư mục</button>
+        <button class="btn desktop-only" onclick="openB64Modal()">📋 Base64</button>
+        <button class="btn btn-primary desktop-only" onclick="document.getElementById('fileInput').click()">＋ Tải ảnh</button>
+        <div class="view-toggle">
+          <button id="gridBtn" class="active" onclick="setView('grid')" title="Lưới">▦</button>
+          <button id="listBtn" onclick="setView('list')" title="Danh sách">☰</button>
         </div>
+      </div>
+    </header>
 
-        <div class="action-buttons">
-            <button id="btnExport" class="btn-export">
-                📥 Xuất dữ liệu
-            </button>
-            <button id="btnImport" class="btn-import">
-                📤 Nạp dữ liệu
-            </button>
-        </div>
+    <div class="toolbar">
+      <div class="search-box">
+        <span>🔍</span>
+        <input type="text" id="searchInput" placeholder="Tìm tên ảnh hoặc thư mục..." />
+      </div>
+      <select class="sort-select" id="sortSelect" onchange="render()">
+        <option value="newest">Mới nhất</option>
+        <option value="name">Tên A-Z</option>
+        <option value="size">Nặng nhất</option>
+      </select>
     </div>
 
-    <div class="albums-scroll">
-        <div id="albums" class="albums-list"></div>
+    <div class="chips-bar" id="chipsBar"></div>
+    <div class="breadcrumb" id="breadcrumb"></div>
+    <div id="contentArea"></div>
+  </div>
+
+  <!-- Mobile Bottom Bar -->
+  <div class="mobile-bar">
+    <button class="btn" onclick="openFolderModal()">📁 Thư mục</button>
+    <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">＋ Tải ảnh</button>
+    <button class="btn" onclick="openB64Modal()">📋 Base64</button>
+  </div>
+
+  <input type="file" id="fileInput" accept="image/png,image/jpeg,image/gif,image/webp" multiple hidden />
+
+  <!-- Lightbox -->
+  <div class="lightbox" id="lightbox" onclick="if(event.target===this) closeLightbox()">
+    <div class="lb-top">
+      <div class="lb-title" id="lbTitle"></div>
+      <button class="btn" onclick="closeLightbox()">✕ Đóng</button>
     </div>
-
-    <div id="uploadArea" class="upload-area">
-        <div class="upload-icon">📤</div>
-        <div class="upload-text">Chạm để chọn ảnh hoặc kéo thả</div>
-        <div class="upload-sub">Hỗ trợ chọn nhiều ảnh cùng lúc</div>
-        <input type="file" id="fileInput" multiple accept="image/*" style="display: none;">
+    <div class="lb-body">
+      <img id="lbImg" src="" alt="" />
     </div>
-
-    <div class="toolbar" id="toolbar" style="display: none;">
-        <label class="select-all">
-            <input type="checkbox" id="selectAllCheckbox" class="checkbox-custom">
-            <span>Chọn tất cả</span>
-        </label>
-        <button id="deleteSelectedBtn" class="delete-selected">🗑️ Xóa</button>
+    <div class="lb-bottom">
+      <button class="btn" id="lbMoveBtn">📁 Chuyển thư mục</button>
+      <button class="btn" id="lbCopyUri">Copy Data URI</button>
+      <button class="btn" id="lbCopyRaw">Copy Base64</button>
+      <a class="btn" id="lbDownload" download style="text-decoration:none">⬇ Tải về</a>
+      <a class="btn" id="lbOpenTab" target="_blank" style="text-decoration:none">↗ Mở link</a>
+      <button class="btn btn-danger" id="lbDelete">🗑 Xóa</button>
     </div>
+  </div>
 
-    <div class="gallery" id="gallery"></div>
-</div>
-
-<div class="viewer" id="viewer" onclick="closeViewer()">
-    <img id="viewImg">
-</div>
-
-<div id="importModal" class="modal">
-    <div class="modal-content">
-        <h3>📤 Nạp dữ liệu</h3>
-        <p style="font-size: 13px; color: #666; margin-bottom: 16px;">Chọn file JSON đã xuất trước đó</p>
-        <input type="file" id="importFile" accept=".json">
-        <div class="modal-buttons">
-            <button onclick="closeImportModal()" style="background: #eef2f6;">Hủy</button>
-            <button id="confirmImportBtn" style="background: #4da6ff; color: white;">Nạp</button>
-        </div>
+  <!-- Folder Modal -->
+  <div class="modal" id="folderModal" onclick="if(event.target===this) closeFolderModal()">
+    <div class="modal-card">
+      <h3 id="folderModalTitle">Tạo thư mục mới</h3>
+      <input type="text" id="folderNameInput" placeholder="Nhập tên thư mục..." />
+      <div class="modal-footer">
+        <button class="btn" onclick="closeFolderModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="submitFolder()">Lưu</button>
+      </div>
     </div>
-</div>
+  </div>
 
-<div id="toast" class="toast"></div>
-<div id="uploadProgress" class="upload-progress"></div>
+  <!-- Move Modal -->
+  <div class="modal" id="moveModal" onclick="if(event.target===this) closeMoveModal()">
+    <div class="modal-card">
+      <h3>Chuyển ảnh vào thư mục</h3>
+      <select id="moveFolderSelect"></select>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeMoveModal()">Hủy</button>
+        <button class="btn btn-primary" onclick="submitMove()">Chuyển</button>
+      </div>
+    </div>
+  </div>
 
-<script>
-    // ==================== CẤU HÌNH ====================
-    const TOKEN = "8588252633:AAHg-DZDEjRvb9Xo23OnAyo1WOOu4NbKHDE";
-    const CHAT_ID = "6754356446";
-    const STORAGE_KEY = "album_data_v3";
-    
-    let data = {};
-    let currentAlbum = null;
-    let selectedPhotos = new Set();
-    let isSelectionMode = false;
-    const imageCache = new Map();
+  <!-- Base64 Modal -->
+  <div class="modal" id="b64Modal" onclick="if(event.target===this) closeB64Modal()">
+    <div class="modal-card">
+      <h3>Lưu ảnh từ Base64</h3>
+      <input type="text" id="b64Filename" placeholder="Tên file (vd: anh.png)" value="pasted-image.png" />
+      <textarea id="b64Textarea" placeholder="Dán chuỗi Base64 hoặc data:image/png;base64,..."></textarea>
+      <div class="modal-footer">
+        <button class="btn" onclick="closeB64Modal()">Hủy</button>
+        <button class="btn btn-primary" onclick="uploadBase64()">Lưu ảnh</button>
+      </div>
+    </div>
+  </div>
 
-    // DOM elements
-    const albumContainer = document.getElementById("albums");
-    const galleryDiv = document.getElementById("gallery");
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // Đổi URL này nếu bạn chuyển server Python sang địa chỉ khác
+    const API_BASE = "http://arc.pikamc.vn:25635";
+
+    let allImages = [];
+    let allFolders = [];
+    let currentTab = "all";
+    let currentFolderId = null;
+    let currentView = "grid";
+    let editingFolderId = null;
+    let movingImageId = null;
+
+    const searchInput = document.getElementById("searchInput");
     const fileInput = document.getElementById("fileInput");
-    const uploadArea = document.getElementById("uploadArea");
-    const toolbar = document.getElementById("toolbar");
-    const selectAllCheckbox = document.getElementById("selectAllCheckbox");
-    const deleteSelectedBtn = document.getElementById("deleteSelectedBtn");
-    const syncStatus = document.getElementById("syncStatus");
-    const importModal = document.getElementById("importModal");
 
-    function showToast(msg, isError = false) {
-        const toast = document.getElementById("toast");
-        toast.textContent = msg;
-        toast.style.backgroundColor = isError ? "#ff6b6b" : "#1e2a3a";
-        toast.style.opacity = "1";
-        setTimeout(() => toast.style.opacity = "0", 2500);
+    function showToast(msg) {
+      const t = document.getElementById("toast");
+      t.textContent = msg;
+      t.classList.add("show");
+      clearTimeout(t._timer);
+      t._timer = setTimeout(() => t.classList.remove("show"), 2500);
     }
 
-    function updateProgress(percent) {
-        const progress = document.getElementById("uploadProgress");
-        progress.style.width = percent + "%";
-        if (percent >= 100) setTimeout(() => progress.style.width = "0%", 500);
+    function formatBytes(bytes) {
+      if (bytes < 1024) return bytes + " B";
+      if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + " KB";
+      return (bytes / (1024 * 1024)).toFixed(2) + " MB";
     }
 
-    function setSyncStatus(syncing, text = null) {
-        if (syncing) {
-            syncStatus.innerHTML = "🔄 Đang đồng bộ...";
-            syncStatus.className = "sync-status syncing";
-        } else {
-            syncStatus.innerHTML = text || "☁️ Đã đồng bộ";
-            syncStatus.className = "sync-status";
+    function goRoot() {
+      currentTab = "all";
+      currentFolderId = null;
+      render();
+    }
+
+    function openFolder(id) {
+      currentTab = "all";
+      currentFolderId = id;
+      render();
+    }
+
+    function setTab(tab) {
+      currentTab = tab;
+      currentFolderId = null;
+      render();
+    }
+
+    function setView(v) {
+      currentView = v;
+      document.getElementById("gridBtn").classList.toggle("active", v === "grid");
+      document.getElementById("listBtn").classList.toggle("active", v === "list");
+      render();
+    }
+
+    async function loadAll() {
+      try {
+        const [imgRes, fldRes] = await Promise.all([
+          fetch(`${API_BASE}/api/images?include_data=1`),
+          fetch(`${API_BASE}/api/folders`)
+        ]);
+        const imgData = await imgRes.json();
+        const fldData = await fldRes.json();
+        allImages = imgData.images || [];
+        allFolders = fldData.folders || [];
+        const totalBytes = allImages.reduce((s, i) => s + i.size_bytes, 0);
+        document.getElementById("statsPill").textContent = `${allImages.length} ảnh • ${formatBytes(totalBytes)}`;
+        render();
+      } catch (err) {
+        showToast("Không kết nối được tới API server!");
+      }
+    }
+
+    function renderChips() {
+      const bar = document.getElementById("chipsBar");
+      bar.innerHTML = "";
+
+      const allChip = document.createElement("button");
+      allChip.className = "chip" + (currentTab === "all" && currentFolderId === null ? " active" : "");
+      allChip.textContent = "🏠 Tất cả";
+      allChip.onclick = goRoot;
+      bar.appendChild(allChip);
+
+      const starChip = document.createElement("button");
+      starChip.className = "chip" + (currentTab === "starred" ? " active" : "");
+      starChip.textContent = "⭐ Yêu thích";
+      starChip.onclick = () => setTab("starred");
+      bar.appendChild(starChip);
+
+      const roots = allFolders.filter(f => f.parent_id === null);
+      for (const f of roots) {
+        const c = document.createElement("button");
+        c.className = "chip" + (currentTab === "all" && currentFolderId === f.id ? " active" : "");
+        c.textContent = "📁 " + f.name;
+        c.onclick = () => openFolder(f.id);
+        bar.appendChild(c);
+      }
+    }
+
+    function renderBreadcrumb() {
+      const bc = document.getElementById("breadcrumb");
+      bc.innerHTML = "";
+      if (currentTab === "starred") {
+        bc.innerHTML = `<span class="crumb-btn current">⭐ Ảnh yêu thích</span>`;
+        return;
+      }
+      if (currentFolderId === null) return;
+
+      const rootBtn = document.createElement("button");
+      rootBtn.className = "crumb-btn";
+      rootBtn.textContent = "🏠 Trang chủ";
+      rootBtn.onclick = goRoot;
+      bc.appendChild(rootBtn);
+
+      const path = [];
+      let cursor = currentFolderId;
+      while (cursor !== null) {
+        const f = allFolders.find(x => x.id === cursor);
+        if (!f) break;
+        path.unshift(f);
+        cursor = f.parent_id;
+      }
+      path.forEach((f, idx) => {
+        const sep = document.createElement("span");
+        sep.textContent = "/";
+        sep.style.color = "var(--muted)";
+        const btn = document.createElement("button");
+        btn.className = "crumb-btn" + (idx === path.length - 1 ? " current" : "");
+        btn.textContent = f.name;
+        btn.onclick = () => openFolder(f.id);
+        bc.append(sep, btn);
+      });
+    }
+
+    function getVisibleFolders() {
+      if (currentTab !== "all") return [];
+      const q = searchInput.value.trim().toLowerCase();
+      if (q) return allFolders.filter(f => f.name.toLowerCase().includes(q));
+      return allFolders.filter(f => f.parent_id === currentFolderId);
+    }
+
+    function getVisibleImages() {
+      const q = searchInput.value.trim().toLowerCase();
+      let list = [...allImages];
+      if (currentTab === "starred") {
+        list = list.filter(i => i.starred === 1);
+      } else if (!q) {
+        list = list.filter(i => i.folder_id === currentFolderId);
+      }
+      if (q) {
+        list = list.filter(i => i.filename.toLowerCase().includes(q));
+      }
+      const sort = document.getElementById("sortSelect").value;
+      if (sort === "name") list.sort((a, b) => a.filename.localeCompare(b.filename));
+      else if (sort === "size") list.sort((a, b) => b.size_bytes - a.size_bytes);
+      else list.sort((a, b) => b.id - a.id);
+      return list;
+    }
+
+    function render() {
+      renderChips();
+      renderBreadcrumb();
+
+      const folders = getVisibleFolders();
+      const images = getVisibleImages();
+      const area = document.getElementById("contentArea");
+      area.innerHTML = "";
+
+      if (folders.length === 0 && images.length === 0) {
+        area.innerHTML = `
+          <div class="empty-box">
+            <h3>Chưa có ảnh nào ở đây</h3>
+            <p>Chọn ảnh từ thiết bị, kéo thả vào màn hình, dán bằng Ctrl+V hoặc tạo thư mục riêng để sắp xếp.</p>
+            <div class="empty-btns">
+              <button class="btn btn-primary" onclick="document.getElementById('fileInput').click()">＋ Tải ảnh lên</button>
+              <button class="btn" onclick="openFolderModal()">📁 Tạo thư mục</button>
+              <button class="btn" onclick="openB64Modal()">📋 Dán Base64</button>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      if (folders.length > 0) {
+        const lbl = document.createElement("div");
+        lbl.className = "section-label";
+        lbl.textContent = "Thư mục";
+        area.appendChild(lbl);
+
+        const fGrid = document.createElement("div");
+        fGrid.className = "folder-grid";
+        for (const f of folders) {
+          const card = document.createElement("div");
+          card.className = "folder-card";
+          card.onclick = () => openFolder(f.id);
+
+          const icon = document.createElement("span");
+          icon.textContent = "📁";
+
+          const name = document.createElement("span");
+          name.className = "folder-name";
+          name.textContent = f.name;
+
+          const acts = document.createElement("div");
+          acts.className = "folder-acts";
+
+          const editBtn = document.createElement("button");
+          editBtn.className = "icon-mini";
+          editBtn.textContent = "✏️";
+          editBtn.onclick = (e) => { e.stopPropagation(); openFolderModal(f); };
+
+          const delBtn = document.createElement("button");
+          delBtn.className = "icon-mini";
+          delBtn.textContent = "🗑";
+          delBtn.onclick = (e) => { e.stopPropagation(); deleteFolder(f.id, f.name); };
+
+          acts.append(editBtn, delBtn);
+          card.append(icon, name, acts);
+          fGrid.appendChild(card);
         }
-    }
+        area.appendChild(fGrid);
+      }
 
-    // ==================== EXPORT DATA ====================
-    function exportData() {
-        try {
-            const exportData = {
-                version: "1.0",
-                exportedAt: new Date().toISOString(),
-                albums: data,
-                totalAlbums: Object.keys(data).length,
-                totalPhotos: Object.values(data).reduce((sum, photos) => sum + photos.length, 0)
+      if (images.length > 0) {
+        if (folders.length > 0) {
+          const lbl = document.createElement("div");
+          lbl.className = "section-label";
+          lbl.textContent = "Ảnh";
+          area.appendChild(lbl);
+        }
+
+        if (currentView === "grid") {
+          const grid = document.createElement("div");
+          grid.className = "photo-grid";
+          for (const img of images) {
+            const dataUri = img.data_uri || `data:${img.mime_type};base64,${img.base64_data}`;
+            const card = document.createElement("div");
+            card.className = "photo-card";
+            card.onclick = () => openLightbox(img);
+
+            const imageEl = document.createElement("img");
+            imageEl.src = dataUri;
+            imageEl.alt = img.filename;
+
+            const star = document.createElement("button");
+            star.className = "star-float" + (img.starred ? " starred" : "");
+            star.textContent = img.starred ? "★" : "☆";
+            star.onclick = (e) => { e.stopPropagation(); toggleStar(img.id); };
+
+            const overlay = document.createElement("div");
+            overlay.className = "photo-overlay";
+            const nameEl = document.createElement("span");
+            nameEl.className = "photo-name";
+            nameEl.textContent = img.filename;
+            const sizeEl = document.createElement("span");
+            sizeEl.className = "photo-size";
+            sizeEl.textContent = formatBytes(img.size_bytes);
+            overlay.append(nameEl, sizeEl);
+
+            card.append(imageEl, star, overlay);
+            grid.appendChild(card);
+          }
+          area.appendChild(grid);
+        } else {
+          const wrap = document.createElement("div");
+          wrap.className = "list-wrap";
+          for (const img of images) {
+            const dataUri = img.data_uri || `data:${img.mime_type};base64,${img.base64_data}`;
+            const row = document.createElement("div");
+            row.className = "list-row";
+
+            const thumb = document.createElement("img");
+            thumb.className = "list-thumb";
+            thumb.src = dataUri;
+            thumb.onclick = () => openLightbox(img);
+
+            const info = document.createElement("div");
+            info.className = "list-info";
+            info.onclick = () => openLightbox(img);
+            const title = document.createElement("div");
+            title.className = "list-title";
+            title.textContent = img.filename;
+            const meta = document.createElement("div");
+            meta.className = "list-meta";
+            meta.textContent = `${img.mime_type} • ${formatBytes(img.size_bytes)}`;
+            info.append(title, meta);
+
+            const acts = document.createElement("div");
+            acts.className = "list-acts";
+            const copyBtn = document.createElement("button");
+            copyBtn.className = "icon-mini";
+            copyBtn.title = "Copy Base64";
+            copyBtn.textContent = "📋";
+            copyBtn.onclick = async () => {
+              await navigator.clipboard.writeText(dataUri);
+              showToast("Đã copy Data URI!");
             };
-            
-            const jsonStr = JSON.stringify(exportData, null, 2);
-            const blob = new Blob([jsonStr], { type: "application/json" });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `telegram_album_backup_${new Date().toISOString().slice(0,19).replace(/:/g, '-')}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showToast(`✅ Đã xuất ${exportData.totalPhotos} ảnh thành công`);
-        } catch (err) {
-            showToast("❌ Xuất dữ liệu thất bại", true);
-            console.error(err);
+            const delBtn = document.createElement("button");
+            delBtn.className = "icon-mini";
+            delBtn.title = "Xóa";
+            delBtn.textContent = "🗑";
+            delBtn.onclick = () => deleteImage(img.id);
+
+            acts.append(copyBtn, delBtn);
+            row.append(thumb, info, acts);
+            wrap.appendChild(row);
+          }
+          area.appendChild(wrap);
         }
+      }
     }
 
-    // ==================== IMPORT DATA ====================
-    function openImportModal() {
-        importModal.style.display = "flex";
-        document.getElementById("importFile").value = "";
+    function openLightbox(img) {
+      const dataUri = img.data_uri || `data:${img.mime_type};base64,${img.base64_data}`;
+      document.getElementById("lbTitle").textContent = `${img.filename} (${formatBytes(img.size_bytes)})`;
+      document.getElementById("lbImg").src = dataUri;
+      document.getElementById("lbOpenTab").href = `${API_BASE}/img/${img.id}`;
+      document.getElementById("lbDownload").href = dataUri;
+      document.getElementById("lbDownload").download = img.filename;
+      document.getElementById("lbMoveBtn").onclick = () => openMoveModal(img);
+      document.getElementById("lbCopyUri").onclick = async () => {
+        await navigator.clipboard.writeText(dataUri);
+        showToast("Đã copy Data URI!");
+      };
+      document.getElementById("lbCopyRaw").onclick = async () => {
+        await navigator.clipboard.writeText(img.base64_data);
+        showToast("Đã copy chuỗi Base64 thuần!");
+      };
+      document.getElementById("lbDelete").onclick = async () => {
+        await deleteImage(img.id);
+        closeLightbox();
+      };
+      document.getElementById("lightbox").classList.add("open");
+    }
+    function closeLightbox() { document.getElementById("lightbox").classList.remove("open"); }
+
+    function openFolderModal(folder = null) {
+      editingFolderId = folder ? folder.id : null;
+      document.getElementById("folderModalTitle").textContent = folder ? "Đổi tên thư mục" : "Tạo thư mục mới";
+      const input = document.getElementById("folderNameInput");
+      input.value = folder ? folder.name : "";
+      document.getElementById("folderModal").classList.add("open");
+      setTimeout(() => input.focus(), 50);
+    }
+    function closeFolderModal() { document.getElementById("folderModal").classList.remove("open"); }
+
+    async function submitFolder() {
+      const name = document.getElementById("folderNameInput").value.trim();
+      if (!name) return showToast("Vui lòng nhập tên thư mục.");
+      if (editingFolderId) {
+        const res = await fetch(`${API_BASE}/api/folders/${editingFolderId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name })
+        });
+        if (res.ok) showToast("Đã đổi tên thư mục");
+      } else {
+        const res = await fetch(`${API_BASE}/api/folders`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name, parent_id: currentFolderId })
+        });
+        if (res.ok) showToast(`Đã tạo thư mục "${name}"`);
+      }
+      closeFolderModal();
+      await loadAll();
     }
 
-    function closeImportModal() {
-        importModal.style.display = "none";
+    async function deleteFolder(id, name) {
+      if (!confirm(`Xóa thư mục "${name}"? Ảnh bên trong sẽ chuyển về Trang chủ.`)) return;
+      const res = await fetch(`${API_BASE}/api/folders/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        if (currentFolderId === id) currentFolderId = null;
+        showToast(`Đã xóa thư mục "${name}"`);
+        await loadAll();
+      }
     }
 
-    async function importData(file) {
-        if (!file) {
-            showToast("Vui lòng chọn file JSON", true);
-            return false;
-        }
-
-        try {
-            const text = await file.text();
-            const importData = JSON.parse(text);
-            
-            // Kiểm tra cấu trúc file
-            let newData;
-            if (importData.albums) {
-                // Format mới có metadata
-                newData = importData.albums;
-            } else if (typeof importData === "object" && !Array.isArray(importData)) {
-                // Format cũ (chỉ có albums)
-                newData = importData;
-            } else {
-                throw new Error("File không đúng định dạng");
-            }
-
-            const albumCount = Object.keys(newData).length;
-            const photoCount = Object.values(newData).reduce((sum, photos) => sum + photos.length, 0);
-            
-            if (confirm(`Nạp dữ liệu sẽ thay thế toàn bộ dữ liệu hiện tại!\n\n📁 ${albumCount} album\n🖼️ ${photoCount} ảnh\n\nBạn có chắc chắn?`)) {
-                data = newData;
-                saveToLocal();
-                await saveToCloud();
-                
-                // Reset state
-                currentAlbum = Object.keys(data)[0] || null;
-                selectedPhotos.clear();
-                imageCache.clear();
-                
-                renderAlbums();
-                await renderImages();
-                showToast(`✅ Đã nạp ${photoCount} ảnh thành công (đã đồng bộ Cloud)`);
-                closeImportModal();
-                return true;
-            }
-        } catch (err) {
-            showToast("❌ File không hợp lệ hoặc bị hỏng", true);
-            console.error(err);
-        }
-        return false;
+    function openMoveModal(img) {
+      movingImageId = img.id;
+      const sel = document.getElementById("moveFolderSelect");
+      sel.innerHTML = `<option value="">🏠 Trang chủ (Thư mục gốc)</option>`;
+      for (const f of allFolders) {
+        const opt = document.createElement("option");
+        opt.value = f.id;
+        opt.textContent = "📁 " + f.name;
+        if (img.folder_id === f.id) opt.selected = true;
+        sel.appendChild(opt);
+      }
+      document.getElementById("moveModal").classList.add("open");
+    }
+    function closeMoveModal() { document.getElementById("moveModal").classList.remove("open"); }
+    async function submitMove() {
+      const val = document.getElementById("moveFolderSelect").value;
+      const folder_id = val ? parseInt(val, 10) : null;
+      const res = await fetch(`${API_BASE}/api/images/${movingImageId}/move`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ folder_id })
+      });
+      if (res.ok) {
+        closeMoveModal();
+        showToast("Đã chuyển thư mục");
+        await loadAll();
+      }
     }
 
-    // ==================== CLOUD SYNC ====================
-    async function saveToCloud() {
-        try {
-            setSyncStatus(true);
-            const jsonData = JSON.stringify({
-                version: "1.0",
-                lastSync: new Date().toISOString(),
-                albums: data
-            });
-            
-            const blob = new Blob([jsonData], { type: 'application/json' });
-            const formData = new FormData();
-            formData.append("chat_id", CHAT_ID);
-            formData.append("document", blob, "album_backup.json");
-            
-            const res = await fetch(`https://api.telegram.org/bot${TOKEN}/sendDocument`, {
-                method: "POST",
-                body: formData
-            });
-            
-            const result = await res.json();
-            if (result.ok) {
-                setSyncStatus(false, "☁️ Đã lưu");
-                return true;
-            } else {
-                throw new Error(result.description);
-            }
-        } catch (err) {
-            console.error("Lưu cloud thất bại:", err);
-            setSyncStatus(false, "⚠️ Mất kết nối");
-            return false;
-        }
+    function openB64Modal() { document.getElementById("b64Modal").classList.add("open"); }
+    function closeB64Modal() { document.getElementById("b64Modal").classList.remove("open"); }
+
+    async function uploadFile(file) {
+      const form = new FormData();
+      form.append("file", file);
+      if (currentFolderId !== null && currentTab === "all") {
+        form.append("folder_id", String(currentFolderId));
+      }
+      showToast(`Đang tải ${file.name}...`);
+      const res = await fetch(`${API_BASE}/api/upload`, { method: "POST", body: form });
+      const data = await res.json();
+      if (!res.ok) return showToast(data.error || "Tải lên thất bại");
+      showToast(`Đã lưu ${data.filename}`);
+      await loadAll();
     }
 
-    async function loadFromCloud() {
-        try {
-            setSyncStatus(true);
-            const res = await fetch(`https://api.telegram.org/bot${TOKEN}/getUpdates?limit=50`);
-            const result = await res.json();
-            
-            if (result.ok && result.result) {
-                for (let i = result.result.length - 1; i >= 0; i--) {
-                    const msg = result.result[i];
-                    if (msg.message && msg.message.document && msg.message.document.file_name === "album_backup.json") {
-                        const fileId = msg.message.document.file_id;
-                        const fileRes = await fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${fileId}`);
-                        const fileJson = await fileRes.json();
-                        
-                        if (fileJson.ok) {
-                            const fileUrl = `https://api.telegram.org/file/bot${TOKEN}/${fileJson.result.file_path}`;
-                            const dataRes = await fetch(fileUrl);
-                            const jsonData = await dataRes.text();
-                            const cloudData = JSON.parse(jsonData);
-                            
-                            let loadedData = cloudData.albums || cloudData;
-                            if (Object.keys(loadedData).length > 0) {
-                                data = loadedData;
-                                saveToLocal();
-                                setSyncStatus(false, "☁️ Đã khôi phục");
-                                showToast("✅ Đã đồng bộ dữ liệu từ Cloud");
-                                return true;
-                            }
-                        }
-                    }
-                }
-            }
-            setSyncStatus(false, "☁️ Cloud sẵn sàng");
-            return false;
-        } catch (err) {
-            console.error("Tải cloud thất bại:", err);
-            setSyncStatus(false, "⚠️ Không thể tải");
-            return false;
-        }
+    async function uploadBase64() {
+      const raw = document.getElementById("b64Textarea").value.trim();
+      const filename = document.getElementById("b64Filename").value.trim() || "pasted-image.png";
+      if (!raw) return showToast("Vui lòng dán chuỗi Base64.");
+      const folder_id = (currentTab === "all") ? currentFolderId : null;
+      const res = await fetch(`${API_BASE}/api/upload`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ filename, base64: raw, folder_id })
+      });
+      const data = await res.json();
+      if (!res.ok) return showToast(data.error || "Lưu thất bại");
+      document.getElementById("b64Textarea").value = "";
+      closeB64Modal();
+      showToast(`Đã lưu ${data.filename}`);
+      await loadAll();
     }
 
-    // ==================== LOCAL STORAGE ====================
-    function saveToLocal() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    async function toggleStar(id) {
+      const res = await fetch(`${API_BASE}/api/images/${id}/star`, { method: "PATCH" });
+      if (res.ok) await loadAll();
     }
 
-    function loadFromLocal() {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-            try {
-                data = JSON.parse(saved);
-                return true;
-            } catch (e) {}
-        }
-        return false;
+    async function deleteImage(id) {
+      const res = await fetch(`${API_BASE}/api/images/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        showToast("Đã xóa ảnh");
+        await loadAll();
+      }
     }
 
-    // ==================== IMAGE FUNCTIONS ====================
-    async function getImageUrl(fileId) {
-        if (imageCache.has(fileId)) return imageCache.get(fileId);
-        try {
-            const res = await fetch(`https://api.telegram.org/bot${TOKEN}/getFile?file_id=${fileId}`);
-            const json = await res.json();
-            if (json.ok && json.result) {
-                const url = `https://api.telegram.org/file/bot${TOKEN}/${json.result.file_path}`;
-                imageCache.set(fileId, url);
-                return url;
-            }
-        } catch (err) {}
-        return null;
-    }
-
-    // ==================== RENDER FUNCTIONS ====================
-    function renderAlbums() {
-        albumContainer.innerHTML = "";
-        const albumNames = Object.keys(data);
-        
-        if (albumNames.length === 0) {
-            albumContainer.innerHTML = '<div style="padding: 10px; color: #94a3b8;">📁 Chưa có album, hãy tạo album đầu tiên</div>';
-        } else {
-            albumNames.forEach(name => {
-                const albumDiv = document.createElement("div");
-                albumDiv.className = "album-chip" + (name === currentAlbum ? " active" : "");
-                
-                const nameSpan = document.createElement("span");
-                nameSpan.className = "album-name";
-                nameSpan.innerText = `${name} (${data[name].length})`;
-                nameSpan.onclick = () => {
-                    currentAlbum = name;
-                    selectedPhotos.clear();
-                    toolbar.style.display = "none";
-                    renderAlbums();
-                    renderImages();
-                };
-                
-                const delBtn = document.createElement("button");
-                delBtn.innerHTML = "🗑️";
-                delBtn.className = "delete-album";
-                delBtn.onclick = async (e) => {
-                    e.stopPropagation();
-                    if (confirm(`Xóa album "${name}" và ${data[name].length} ảnh?`)) {
-                        delete data[name];
-                        if (currentAlbum === name) currentAlbum = Object.keys(data)[0] || null;
-                        saveToLocal();
-                        await saveToCloud();
-                        renderAlbums();
-                        renderImages();
-                        showToast(`Đã xóa album "${name}"`);
-                    }
-                };
-                
-                albumDiv.appendChild(nameSpan);
-                albumDiv.appendChild(delBtn);
-                albumContainer.appendChild(albumDiv);
-            });
-        }
-    }
-
-    async function uploadMultiplePhotos(files) {
-        if (!currentAlbum) {
-            showToast("Vui lòng chọn album trước!", true);
-            return false;
-        }
-        
-        let successCount = 0;
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            if (!file.type.startsWith("image/")) continue;
-            
-            updateProgress((i / files.length) * 100);
-            
-            try {
-                const formData = new FormData();
-                formData.append("chat_id", CHAT_ID);
-                formData.append("photo", file);
-                
-                const response = await fetch(`https://api.telegram.org/bot${TOKEN}/sendPhoto`, {
-                    method: "POST",
-                    body: formData
-                });
-                
-                const result = await response.json();
-                if (result.ok) {
-                    const fileId = result.result.photo[result.result.photo.length - 1].file_id;
-                    data[currentAlbum].push(fileId);
-                    successCount++;
-                }
-            } catch (err) {}
-        }
-        
-        updateProgress(100);
-        saveToLocal();
-        await saveToCloud();
-        await renderImages();
-        showToast(`✅ Đã upload ${successCount} ảnh`);
-        return true;
-    }
-
-    async function deleteSelectedPhotos() {
-        if (selectedPhotos.size === 0) return;
-        
-        if (confirm(`Xóa ${selectedPhotos.size} ảnh?`)) {
-            const newPhotos = data[currentAlbum].filter((_, index) => !selectedPhotos.has(index));
-            data[currentAlbum] = newPhotos;
-            saveToLocal();
-            await saveToCloud();
-            selectedPhotos.clear();
-            toolbar.style.display = "none";
-            await renderImages();
-            showToast(`Đã xóa ${selectedPhotos.size} ảnh`);
-        }
-    }
-
-    async function deleteSinglePhoto(index) {
-        if (confirm("Xóa ảnh này?")) {
-            data[currentAlbum].splice(index, 1);
-            saveToLocal();
-            await saveToCloud();
-            await renderImages();
-            showToast("Đã xóa ảnh");
-        }
-    }
-
-    async function renderImages() {
-        if (!currentAlbum || !data[currentAlbum] || data[currentAlbum].length === 0) {
-            galleryDiv.innerHTML = '<div class="empty-state">✨ Chưa có ảnh, hãy upload ảnh đầu tiên</div>';
-            toolbar.style.display = "none";
-            return;
-        }
-        
-        galleryDiv.innerHTML = Array(data[currentAlbum].length).fill().map(() => 
-            '<div class="photo-item skeleton"></div>'
-        ).join('');
-        
-        const photoIds = data[currentAlbum];
-        const tempDiv = document.createElement('div');
-        tempDiv.style.display = 'contents';
-        
-        for (let i = 0; i < photoIds.length; i++) {
-            const url = await getImageUrl(photoIds[i]);
-            const photoDiv = document.createElement('div');
-            photoDiv.className = 'photo-item';
-            
-            if (url) {
-                const img = document.createElement('img');
-                img.src = url;
-                img.loading = "lazy";
-                img.onclick = (e) => {
-                    if (!isSelectionMode) {
-                        e.stopPropagation();
-                        openViewer(url);
-                    }
-                };
-                photoDiv.appendChild(img);
-                
-                const checkboxDiv = document.createElement('div');
-                checkboxDiv.className = `photo-checkbox ${selectedPhotos.has(i) ? 'selected' : ''}`;
-                const checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.checked = selectedPhotos.has(i);
-                checkbox.onclick = (e) => {
-                    e.stopPropagation();
-                    if (checkbox.checked) selectedPhotos.add(i);
-                    else selectedPhotos.delete(i);
-                    checkboxDiv.className = `photo-checkbox ${selectedPhotos.has(i) ? 'selected' : ''}`;
-                    updateToolbar();
-                };
-                checkboxDiv.appendChild(checkbox);
-                photoDiv.appendChild(checkboxDiv);
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.innerHTML = '🗑️';
-                deleteBtn.className = 'delete-single';
-                deleteBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    deleteSinglePhoto(i);
-                };
-                photoDiv.appendChild(deleteBtn);
-            }
-            tempDiv.appendChild(photoDiv);
-        }
-        
-        galleryDiv.innerHTML = tempDiv.innerHTML;
-        if (selectedPhotos.size > 0) toolbar.style.display = "flex";
-        else toolbar.style.display = "none";
-    }
-    
-    function updateToolbar() {
-        if (selectedPhotos.size > 0) {
-            toolbar.style.display = "flex";
-            if (data[currentAlbum]) selectAllCheckbox.checked = selectedPhotos.size === data[currentAlbum].length;
-        } else {
-            toolbar.style.display = "none";
-        }
-    }
-    
-    function toggleSelectAll() {
-        if (selectAllCheckbox.checked) {
-            for (let i = 0; i < data[currentAlbum].length; i++) selectedPhotos.add(i);
-        } else {
-            selectedPhotos.clear();
-        }
-        renderImages();
-    }
-    
-    function openViewer(url) {
-        document.getElementById("viewer").style.display = "flex";
-        document.getElementById("viewImg").src = url;
-    }
-    
-    function closeViewer() {
-        document.getElementById("viewer").style.display = "none";
-    }
-    
-    function handleFileSelect(files) {
-        if (files.length > 0) uploadMultiplePhotos(Array.from(files));
-    }
-    
-    async function createAlbum() {
-        const name = document.getElementById("newAlbum").value.trim();
-        if (!name) {
-            showToast("Vui lòng nhập tên album", true);
-            return;
-        }
-        if (data[name]) {
-            showToast("Album đã tồn tại", true);
-            return;
-        }
-        data[name] = [];
-        saveToLocal();
-        await saveToCloud();
-        currentAlbum = name;
-        renderAlbums();
-        renderImages();
-        document.getElementById("newAlbum").value = "";
-        showToast(`✅ Đã tạo album "${name}"`);
-    }
-    
-    // ==================== INIT ====================
-    async function init() {
-        loadFromLocal();
-        await loadFromCloud();
-        
-        if (Object.keys(data).length === 0) {
-            data = {};
-            saveToLocal();
-        }
-        
-        renderAlbums();
-        const albumKeys = Object.keys(data);
-        if (albumKeys.length > 0 && (!currentAlbum || !data[currentAlbum])) {
-            currentAlbum = albumKeys[0];
-        }
-        renderImages();
-    }
-    
-    // ==================== EVENT LISTENERS ====================
-    document.getElementById("btnCreateAlbum").onclick = createAlbum;
-    document.getElementById("btnSync").onclick = async () => {
-        await loadFromCloud();
-        renderAlbums();
-        renderImages();
-        showToast("🔄 Đã đồng bộ từ Cloud");
-    };
-    document.getElementById("btnExport").onclick = exportData;
-    document.getElementById("btnImport").onclick = openImportModal;
-    document.getElementById("confirmImportBtn").onclick = async () => {
-        const file = document.getElementById("importFile").files[0];
-        if (file) await importData(file);
-        else showToast("Vui lòng chọn file", true);
-    };
-    
-    fileInput.onchange = (e) => handleFileSelect(e.target.files);
-    uploadArea.onclick = () => fileInput.click();
-    uploadArea.ondragover = (e) => { e.preventDefault(); uploadArea.classList.add('drag-over'); };
-    uploadArea.ondragleave = () => uploadArea.classList.remove('drag-over');
-    uploadArea.ondrop = (e) => {
-        e.preventDefault();
-        uploadArea.classList.remove('drag-over');
-        handleFileSelect(e.dataTransfer.files);
-    };
-    selectAllCheckbox.onchange = toggleSelectAll;
-    deleteSelectedBtn.onclick = deleteSelectedPhotos;
-    
-    let pressTimer;
-    galleryDiv.addEventListener('touchstart', (e) => {
-        if (e.target.closest('.photo-item') && !isSelectionMode) {
-            pressTimer = setTimeout(() => {
-                isSelectionMode = true;
-                toolbar.style.display = "flex";
-                renderImages();
-                showToast("Đã bật chế độ chọn ảnh");
-            }, 500);
-        }
+    searchInput.addEventListener("input", render);
+    fileInput.addEventListener("change", async (e) => {
+      for (const file of e.target.files) await uploadFile(file);
+      fileInput.value = "";
     });
-    galleryDiv.addEventListener('touchend', () => clearTimeout(pressTimer));
-    
-    init();
-</script>
+
+    window.addEventListener("dragover", (e) => e.preventDefault());
+    window.addEventListener("drop", async (e) => {
+      e.preventDefault();
+      for (const file of e.dataTransfer.files) await uploadFile(file);
+    });
+    window.addEventListener("paste", async (e) => {
+      const items = e.clipboardData?.items || [];
+      for (const item of items) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) await uploadFile(file);
+        }
+      }
+    });
+    document.getElementById("folderNameInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter") submitFolder();
+    });
+    window.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeLightbox();
+        closeB64Modal();
+        closeFolderModal();
+        closeMoveModal();
+      }
+    });
+
+    loadAll();
+  </script>
 </body>
 </html>
