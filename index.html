@@ -498,6 +498,72 @@
     }
     .toast.show { display: block; }
 
+    /* Upload Status Box */
+    .upload-status-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 14px;
+      display: none;
+    }
+    .upload-status-box.open { display: block; }
+    .upload-status-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+    }
+    .upload-status-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 190px;
+      overflow-y: auto;
+    }
+    .up-item {
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .up-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+    .up-name {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      font-weight: 500;
+    }
+    .up-badge {
+      white-space: nowrap;
+      font-size: 0.76rem;
+      font-weight: 600;
+    }
+    .up-badge.ok { color: #4ade80; }
+    .up-badge.err { color: #ff4d4d; }
+    .up-bar {
+      height: 4px;
+      background: #262626;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .up-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: #ffffff;
+      transition: width 0.15s;
+    }
+
     @media (max-width: 720px) {
       .container { padding: 12px; }
       .desktop-only { display: none !important; }
@@ -542,6 +608,7 @@
       </div>
 
       <div class="header-actions">
+        <button class="btn" id="wakeBtn" onclick="toggleWakeLock()" title="Giữ màn hình luôn sáng">☀️ Luôn sáng</button>
         <button class="btn desktop-only" onclick="openFolderModal()">📁 Thư mục</button>
         <button class="btn desktop-only" onclick="openB64Modal()">📋 Base64</button>
         <button class="btn btn-primary desktop-only" onclick="document.getElementById('fileInput').click()">＋ Tải ảnh</button>
@@ -565,6 +632,13 @@
     </div>
 
     <div class="chips-bar" id="chipsBar"></div>
+    <div class="upload-status-box" id="uploadStatusBox">
+      <div class="upload-status-head">
+        <span id="uploadSummary">Trạng thái gửi ảnh</span>
+        <button class="icon-mini" title="Đóng / Xóa danh sách" onclick="clearUploadStatus()">✕</button>
+      </div>
+      <div class="upload-status-list" id="uploadStatusList"></div>
+    </div>
     <div class="breadcrumb" id="breadcrumb"></div>
     <div id="contentArea"></div>
   </div>
@@ -1106,36 +1180,140 @@
     function openB64Modal() { document.getElementById("b64Modal").classList.add("open"); }
     function closeB64Modal() { document.getElementById("b64Modal").classList.remove("open"); }
 
-    async function uploadFile(file) {
-      const form = new FormData();
-      form.append("file", file);
-      if (currentFolderId !== null && currentTab === "all") {
-        form.append("folder_id", String(currentFolderId));
+    let uploadQueue = [];
+
+    function renderUploadStatus() {
+      const box = document.getElementById("uploadStatusBox");
+      const list = document.getElementById("uploadStatusList");
+      const summary = document.getElementById("uploadSummary");
+      if (uploadQueue.length === 0) {
+        box.classList.remove("open");
+        return;
       }
-      showToast(`Đang tải ${file.name}...`);
-      const res = await fetch(`${API_BASE}/api/upload`, { method: "POST", body: form });
-      const data = await res.json();
-      if (!res.ok) return showToast(data.error || "Tải lên thất bại");
-      showToast(`Đã lưu ${data.filename}`);
-      await loadAll();
+      box.classList.add("open");
+      const done = uploadQueue.filter(x => x.status === "ok").length;
+      const fail = uploadQueue.filter(x => x.status === "err").length;
+      const sending = uploadQueue.filter(x => x.status === "sending").length;
+      summary.textContent = `Trạng thái gửi ảnh: ${done}/${uploadQueue.length} đã lên` +
+        (sending ? ` • ${sending} đang gửi` : "") +
+        (fail ? ` • ${fail} lỗi` : "");
+
+      list.innerHTML = "";
+      for (const item of uploadQueue) {
+        const row = document.createElement("div");
+        row.className = "up-item";
+
+        const top = document.createElement("div");
+        top.className = "up-row";
+
+        const name = document.createElement("span");
+        name.className = "up-name";
+        name.textContent = item.name;
+
+        const badge = document.createElement("span");
+        badge.className = "up-badge " + (item.status === "ok" ? "ok" : item.status === "err" ? "err" : "");
+        if (item.status === "sending") badge.textContent = `⏳ Đang gửi (${item.progress}%)`;
+        else if (item.status === "ok") badge.textContent = "✅ Đã lên";
+        else badge.textContent = `❌ ${item.error || "Lỗi"}`;
+
+        top.append(name, badge);
+
+        const bar = document.createElement("div");
+        bar.className = "up-bar";
+        const fill = document.createElement("div");
+        fill.className = "up-bar-fill";
+        fill.style.width = item.progress + "%";
+        if (item.status === "ok") fill.style.background = "#4ade80";
+        if (item.status === "err") fill.style.background = "#ff4d4d";
+        bar.appendChild(fill);
+
+        row.append(top, bar);
+        list.appendChild(row);
+      }
+    }
+
+    function clearUploadStatus() {
+      uploadQueue = uploadQueue.filter(x => x.status === "sending");
+      renderUploadStatus();
+    }
+
+    function uploadFile(file) {
+      return new Promise((resolve) => {
+        const entry = { name: file.name, progress: 0, status: "sending", error: "" };
+        uploadQueue.unshift(entry);
+        renderUploadStatus();
+
+        const form = new FormData();
+        form.append("file", file);
+        if (currentFolderId !== null && currentTab === "all") {
+          form.append("folder_id", String(currentFolderId));
+        }
+
+        const xhr = new XMLHttpRequest();
+        xhr.open("POST", `${API_BASE}/api/upload`);
+        xhr.upload.onprogress = (e) => {
+          if (e.lengthComputable) {
+            entry.progress = Math.round((e.loaded / e.total) * 100);
+            renderUploadStatus();
+          }
+        };
+        xhr.onload = async () => {
+          let data = {};
+          try { data = JSON.parse(xhr.responseText); } catch {}
+          if (xhr.status >= 200 && xhr.status < 300) {
+            entry.progress = 100;
+            entry.status = "ok";
+            renderUploadStatus();
+            await loadAll();
+          } else {
+            entry.status = "err";
+            entry.error = data.error || `Lỗi ${xhr.status}`;
+            renderUploadStatus();
+          }
+          resolve();
+        };
+        xhr.onerror = () => {
+          entry.status = "err";
+          entry.error = "Mất kết nối server";
+          renderUploadStatus();
+          resolve();
+        };
+        xhr.send(form);
+      });
     }
 
     async function uploadBase64() {
       const raw = document.getElementById("b64Textarea").value.trim();
       const filename = document.getElementById("b64Filename").value.trim() || "pasted-image.png";
       if (!raw) return showToast("Vui lòng dán chuỗi Base64.");
-      const folder_id = (currentTab === "all") ? currentFolderId : null;
-      const res = await fetch(`${API_BASE}/api/upload`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ filename, base64: raw, folder_id })
-      });
-      const data = await res.json();
-      if (!res.ok) return showToast(data.error || "Lưu thất bại");
-      document.getElementById("b64Textarea").value = "";
+
+      const entry = { name: filename, progress: 40, status: "sending", error: "" };
+      uploadQueue.unshift(entry);
       closeB64Modal();
-      showToast(`Đã lưu ${data.filename}`);
-      await loadAll();
+      renderUploadStatus();
+
+      const folder_id = (currentTab === "all") ? currentFolderId : null;
+      try {
+        const res = await fetch(`${API_BASE}/api/upload`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ filename, base64: raw, folder_id })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          entry.status = "err";
+          entry.error = data.error || "Lưu thất bại";
+        } else {
+          entry.progress = 100;
+          entry.status = "ok";
+          document.getElementById("b64Textarea").value = "";
+          await loadAll();
+        }
+      } catch {
+        entry.status = "err";
+        entry.error = "Mất kết nối server";
+      }
+      renderUploadStatus();
     }
 
     async function toggleStar(id) {
@@ -1198,6 +1376,67 @@
       }
     });
 
+    let wakeLock = null;
+    let wakeEnabled = true;
+
+    async function requestWakeLock() {
+      const btn = document.getElementById("wakeBtn");
+      if (!("wakeLock" in navigator)) {
+        if (btn) btn.style.display = "none";
+        return;
+      }
+      if (!wakeEnabled) return;
+      try {
+        wakeLock = await navigator.wakeLock.request("screen");
+        wakeLock.addEventListener("release", () => {
+          updateWakeBtn();
+        });
+        updateWakeBtn();
+      } catch {
+        updateWakeBtn();
+      }
+    }
+
+    function updateWakeBtn() {
+      const btn = document.getElementById("wakeBtn");
+      if (!btn) return;
+      if (!wakeEnabled) {
+        btn.textContent = "🌙 Tự tắt";
+        btn.style.opacity = "0.65";
+      } else if (wakeLock) {
+        btn.textContent = "☀️ Luôn sáng";
+        btn.style.opacity = "1";
+      } else {
+        btn.textContent = "☀️ Luôn sáng";
+        btn.style.opacity = "0.85";
+      }
+    }
+
+    async function toggleWakeLock() {
+      wakeEnabled = !wakeEnabled;
+      if (wakeEnabled) {
+        await requestWakeLock();
+        showToast("Đã bật giữ màn hình luôn sáng");
+      } else {
+        if (wakeLock) {
+          await wakeLock.release();
+          wakeLock = null;
+        }
+        updateWakeBtn();
+        showToast("Đã tắt giữ màn hình luôn sáng");
+      }
+    }
+
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && wakeEnabled) {
+        requestWakeLock();
+      }
+    });
+    window.addEventListener("pointerdown", () => {
+      if (wakeEnabled && !wakeLock) requestWakeLock();
+    }, { passive: true });
+
+    requestWakeLock();
     loadAll();
   </script>
 </body>
