@@ -637,8 +637,8 @@
   <div class="toast" id="toast"></div>
 
   <script>
-    // Đổi URL này nếu bạn chuyển server Python sang địa chỉ khác
-    const API_BASE = "http://arc.pikamc.vn:25635";
+    // Trên HTTPS (Vercel) sẽ tự đi qua vercel.json để tránh lỗi Mixed Content
+    const API_BASE = location.protocol === "https:" ? "" : "http://arc.pikamc.vn:25635";
 
     let allImages = [];
     let allFolders = [];
